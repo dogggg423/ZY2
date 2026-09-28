@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC
+        "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.example.mapper.ProductMapper">
+
+    <!--
+      题目1：哪个产品被哪个客户买走了，哪个供应商提供。
+      一次多表联查带出：
+        association  -> 购买该产品的客户（客户:产品 = 1:N，一个客户买多件产品）
+        collection   -> 供应该产品的供应商（产品:供应商 = M:N，中间表 t_product_supplier）
+    -->
+    <resultMap id="ProductFullMap" type="Product">
+        <id property="id" column="pid"/>
+        <result property="name" column="pname"/>
+        <result property="price" column="price"/>
+
+        <!-- 一对一（客户-产品一对多的“多”这一侧）：购买客户 -->
+        <association property="customer" javaType="Customer">
+            <id property="id" column="cid"/>
+            <result property="name" column="cname"/>
+        </association>
+
+        <!-- 多对多：供货供应商列表 -->
+        <collection property="suppliers" ofType="Supplier">
+            <id property="id" column="sid"/>
+            <result property="name" column="sname"/>
+        </collection>
+    </resultMap>
+
+    <!-- 全部产品：谁买的 + 哪些供应商供货 -->
+    <select id="selectAllWithBuyerAndSuppliers" resultMap="ProductFullMap">
+        SELECT p.id   AS pid,
+               p.name AS pname,
+               p.price,
+               c.id   AS cid,
+               c.name AS cname,
+               s.id   AS sid,
+               s.name AS sname
+          FROM t_product p
+          LEFT JOIN t_customer c ON c.id = p.customer_id
+          LEFT JOIN t_product_supplier ps ON ps.product_id = p.id
+          LEFT JOIN t_supplier s ON s.id = ps.supplier_id
+         ORDER BY p.id, s.id
+    </select>
+
+    <!-- 按产品 id 查：这件产品被谁买走、由哪些供应商提供 -->
+    <select id="selectByIdWithBuyerAndSuppliers" parameterType="int" resultMap="ProductFullMap">
+        SELECT p.id   AS pid,
+               p.name AS pname,
+               p.price,
+               c.id   AS cid,
+               c.name AS cname,
+               s.id   AS sid,
+               s.name AS sname
+          FROM t_product p
+          LEFT JOIN t_customer c ON c.id = p.customer_id
+          LEFT JOIN t_product_supplier ps ON ps.product_id = p.id
+          LEFT JOIN t_supplier s ON s.id = ps.supplier_id
+         WHERE p.id = #{id}
+         ORDER BY s.id
+    </select>
+
+</mapper>

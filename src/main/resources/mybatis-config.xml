@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC
+        "-//mybatis.org//DTD Config 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+    <settings>
+        <!-- 控制台打印 SQL 日志，方便观察 XML / 注解两种方式各自执行的语句 -->
+        <setting name="logImpl" value="STDOUT_LOGGING"/>
+        <!-- 驼峰自动映射 -->
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+    </settings>
+
+    <!-- 实体类别名，XML 里写 resultMap 就不用写全限定名 -->
+    <typeAliases>
+        <package name="org.example.entity"/>
+    </typeAliases>
+
+    <environments default="dev">
+        <environment id="dev">
+            <transactionManager type="JDBC"/>
+            <!-- H2 内存数据库，测试完自动销毁，不需要本机装 MySQL -->
+            <dataSource type="POOLED">
+                <property name="driver" value="org.h2.Driver"/>
+                <property name="url"
+                          value="jdbc:h2:mem:demo;DB_CLOSE_DELAY=-1;MODE=MySQL"/>
+                <property name="username" value="sa"/>
+                <property name="password" value=""/>
+            </dataSource>
+        </environment>
+    </environments>
+
+    <mappers>
+        <!-- 题目1：XML 方式，指向同目录下的 ProductMapper.xml -->
+        <mapper resource="org/example/mapper/ProductMapper.xml"/>
+        <!-- 题目2：注解方式，直接注册接口类 -->
+        <mapper class="org.example.mapper.SupplierMapper"/>
+    </mappers>
+
+</configuration>
